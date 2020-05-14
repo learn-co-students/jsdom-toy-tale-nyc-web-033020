@@ -64,11 +64,11 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.target.className === 'like-btn'){
       let card = e.target.parentElement
       let p = card.querySelector('p')
-      let count = parseInt(p.textContent)
-      let toyDiv = document.querySelector('[data-num]')
-      let id = parseInt(toyDiv.getAttribute('data-num'))
-      p.textContent = count + 1
-      count = p.textContent
+      let prevCount = parseInt(p.textContent)
+      let id = parseInt(card.getAttribute('data-num'))
+      const newCount = prevCount + 1
+      p.textContent = `${newCount} likes`
+      // count = p.textContent
       fetch(`http://localhost:3000/toys/${id}`, {
         method: 'PATCH',
         headers: 
@@ -77,7 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
           Accept: "application/json"
         },
         body: JSON.stringify({
-          "likes": count
+          "likes": newCount
         })
       })
     }
