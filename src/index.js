@@ -18,36 +18,42 @@ document.addEventListener("DOMContentLoaded", () => {
         <h2>${toy.name}</h2>
         <img src=${toy.image} class="toy-avatar" />
         <p>${toy.likes} Likes </p>
-        <button class="like-btn">Like <3</button>
         `
+        const btn = document.createElement('button')
+        btn.className = 'like-btn'
+        btn.textContent = "Like <3"
+        btn.addEventListener('click', event => {
+          console.log('click', event)
+          if(event.target.className == 'like-btn'){
+            const parent = event.target.parentElement
+            const p = parent.querySelector('p')
+            const totalNumLikes = parseInt(p.textContent)
+            const newNumLikes = totalNumLikes + 1
+            p.textContent = newNumLikes + " Likes"
+
+            const patchUrl = url + '/' + toy.id
+            const options = {
+              method: 'PATCH',
+              headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json"
+              },
+              body: JSON.stringify({
+                likes: newNumLikes,
+              })
+            }
+            fetch(patchUrl, options).then(response => console.log(response))
+          }
+        })
+        toyDiv.append(btn)
         toyCollection.append(toyDiv)
       }
     })
-  
-  const likeBtn = document.getElementsByClassName('like-btn')
-  console.log(likeBtn)
-  // const likeBtnArray = Array.from(likeBtn)
-  // console.log(likeBtnArray)
-  for (const btn of likeBtn) {
-    // console.log(btn)
-    btn.addEventListener('click', (event) => {
-      console.log(event.target)
-      if(event.target.className == 'like-btn'){
-        const parent = event.target.parentElement
-        const p = parent.querySelector('p')
-        const totalNumLikes = parseInt(p.textContent)
-        const newNumLikes = totalNumLikes + 1
-        p.textContent = newNumLikes
-      }
-    })
-  }
-
-  // clicks on addnewtoy
-  // make post request to add the toy
-  // render on page
-  addBtn.addEventListener("click", () => {
-    // want to make a post request
-    // doesn't add to bottom of page tho
+    
+  const form = document.querySelector('.add-toy-form')
+  form.addEventListener('submit', (event) => {
+    const name = form.name.value
+    const imageUrl = form.image.value
     fetch(url, {
       method: 'POST',
       headers: {
@@ -55,14 +61,14 @@ document.addEventListener("DOMContentLoaded", () => {
           Accept: "application/json"
       },
       body: JSON.stringify({
-        "name": "Jessie",
-        "image": "https://vignette.wikia.nocookie.net/p__/images/8/88/Jessie_Toy_Story_3.png/revision/latest?cb=20161023024601&path-prefix=protagonist",
+        "name": name,
+        "image": imageUrl,
         "likes": 0
       })
-    }).then(response => response.json())
-    .then(json => {
-      toyCollection.append(json)
-    })
+    }).then(response => console.log(response))
+  })
+
+  addBtn.addEventListener("click", () => {
 
     // hide & seek with the form
     addToy = !addToy;
