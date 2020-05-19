@@ -1,129 +1,77 @@
-let addToy = false;
-
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener('DOMContentLoaded', function(){
+  const url = 'http://localhost:3000/toys'
   const addBtn = document.querySelector("#new-toy-btn");
   const toyFormContainer = document.querySelector(".container");
-  // const toyCollection = document.querySelector('#toy-collection')
-  // const card = document.createElement('div')
-  // const imageTag = document.createElement('img')
-
-  // card.setAttribute('class', 'card');
-  // imageTag.setAttribute('src', photo);
-  // toyCollection.appendChild(card)
-  // card.appendChild(imageTag)
-
-  // console.log(toyCollection)
-
-  const toyCollection = document.querySelector('#toy-collection')
-
-
-  fetch('http://localhost:3000/toys')
-  .then(function(response) {
-  return response.json();
-  })
- .then(function(json) {
-  console.log(json)
-
-  const characterInfo = json
-
-  characterInfo.forEach(person => {
-  const name = person.name
-  const photo = person.image 
-  const likes = person.likes 
-
-  const card = document.createElement('div')
-  card.setAttribute('id', `${person.id}`)
-  toyCollection.appendChild(card)
-  const imageTag = document.createElement('img')
-  imageTag.setAttribute('class', 'toy-avatar')
-  imageTag.setAttribute('src', photo);
-  const h2 = document.createElement('h2')
-  h2.innerText = name 
-  const para = document.createElement('p')
-  para.innerHTML = `${likes} likes`
-  const button = document.createElement('button')
-  button.innerHTML = 'Like'
-  button.setAttribute('id', `${name}`)
-  card.setAttribute('class', 'card');
-  card.appendChild(h2)
-  card.appendChild(imageTag)
-  card.appendChild(para)
-  card.appendChild(button)
-  });
-
-  console.log(toyCollection)
-
-
-  const form = document.querySelector('.add-toy-form')
-  const submit = form.getElementsByTagName('input')[2]
-
-  submit.addEventListener('click', function(e){
-    console.log(e.target)
-    e.preventDefault()
-
-    const newName = form.getElementsByTagName('input')[0].value 
-    const newUrl = form.getElementsByTagName('input')[1].value
-    console.log(newName)
-   
-  
-     const newDiv = document.createElement('div')
-     newDiv.setAttribute('class','card')
-
-     newDiv.innerHTML = `  <h2>${newName}</h2>
-     <img src=${newUrl} class="toy-avatar"/>
-     <p> 0 Likes </p>
-     <button class="like-btn">Like </button>`
-  
-    toyCollection.appendChild(newDiv)
-
-    fetch('http://localhost:3000/toys/new'), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: "application/json"
-      },
-      body: JSON.stringify({
-        "name": newName,
-        "image": newUrl,
-        "likes": 0
-       })
-}
-})
+  const collection = document.querySelector('#toy-collection')
+  let addToy = false;
   
 
+  // toy container 
+  function displayToys(){
+    fetch(url).then(res => res.json()).then(toys => {
+      toys.forEach(toy => {
+      const toyDiv = document.createElement('div')
+      toyDiv.setAttribute('class','card')
+      toyDiv.setAttribute('id',`${toy.id}`)
+      toyDiv.innerHTML = `<h2>${toy.name}</h2>
+      <img src="${toy.image}" class="toy-avatar"/>
+      <p>${toy.likes} Likes </p>
+      <button class="like-btn">Like <3</button>`
+      collection.appendChild(toyDiv)
+      }) 
+    })
+  }
+displayToys()
+
+// add a toy and like a toy 
   document.addEventListener('click', function(e){
-    let toy = e.target.parentElement
-    let likes = toy.getElementsByTagName('p')[0].innerText
-    let currentlikes = parseInt(likes)
-    let newAmountOflikes = currentlikes + 1 
-    console.log(newAmountOflikes)
-    fetch(`http://localhost:3000/toys/${toy.id}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: "application/json"
-      },
-      body: JSON.stringify({likes:`${newAmountOflikes}` })
-    }).then(function(response) {
-      return response.json();
-      })
-     .then(function(json) {
-      toy.querySelector('p').innerText = `${json.likes} likes`
-      console.log(json)
-     });
-    
+    e.preventDefault()
+      if (e.target.className == 'submit'){
+       const form = document.querySelector('form')
+       const newName = document.querySelectorAll('input')[0].value 
+       const newPic = document.querySelectorAll('input')[1].value
+              let newtoyDiv = document.createElement('div')
+              newtoyDiv.setAttribute('class','card')
+              newtoyDiv.innerHTML += `<h2>${newName}</h2>
+              <img src="${newPic}" class="toy-avatar"/>
+              <p> 0 Likes </p>
+              <button class="like-btn">Like <3</button>`
+              collection.appendChild(newtoyDiv)
+       form.reset()
+          fetch(url, {
+            method: 'POST',
+            headers: {
+              "content-type": "application/json",
+              Accept: "application/json"
+            },
+            body: JSON.stringify({
+              name: newName,
+              image: newPic,
+              likes: 0
+            })
+            
+          })
+      } 
+      else if (e.target.className == 'like-btn'){
+        const id = e.target.parentElement.id
+        const likesTag = e.target.parentElement.querySelector('p')
+        const likes = parseInt(likesTag.innerText) + 1 
+             fetch(`${url}/${id}`, {
+               method: 'PATCH',
+               headers: {
+                 "content-type": "application/json",
+                 Accept: "application/json"
+               },
+               body: JSON.stringify({
+                 likes: `${likes}`
+               })
+             }).then(likesTag.innerHTML = `${likes} Likes`)
+      }
+  })
 
 
-  //   fetch('http://localhost:3000/toys')
-  //   .then(function(response) {
-  //   return response.json();
-  //   })
-  //  .then(function(json) {
-  //   console.log(json)
-  });
 
-});
-
+  /// add new toy dropdown 
   addBtn.addEventListener("click", () => {
     addToy = !addToy;
     if (addToy) {
@@ -133,9 +81,4 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-
- 
-
-
-
-});
+})
