@@ -1,54 +1,86 @@
 let addToy = false;
 
 document.addEventListener("DOMContentLoaded", () => {
-  const toyUrl = "http://localhost:3000/toys";
-  const toyCollection = document.querySelector("#toy-collection");
+
   const addBtn = document.querySelector("#new-toy-btn");
   const toyFormContainer = document.querySelector(".container");
+  const toyCollectionDiv = document.querySelector("#toy-collection")
+  const toyUrl = 'http://localhost:3000/toys'
+  const toyForm = document.querySelector('.add-toy-form')
+
+  const getToys = () => {
+    fetch(toyUrl)
+      .then(response => response.json())
+      .then(toyData => renderToy(toyData))
+  }
+
+  function renderToy(toyData) {
+    toyCollectionDiv.innerHTML=""
+    toyData.forEach(toy => {
+      div = document.createElement("div")
+      div.className = "card"
+      div.dataset.id = toy.id
+      div.innerHTML = `
+      <h2>${toy.name}</h2>
+      <img src=${toy.image} class="toy-avatar" />
+      <p>${toy.likes} Likes </p>
+      <button class="like-btn">Like <3</button>
+    </div>`
+      toyCollectionDiv.append(div)
+    })
+  }
+
   addBtn.addEventListener("click", () => {
     // hide & seek with the form
     addToy = !addToy;
     if (addToy) {
       toyFormContainer.style.display = "block";
+      toyForm.addEventListener("submit", function(event){
+        event.preventDefault()
+
+        let addToyForm = event.target
+
+        const name = addToyForm.name.value
+        const image = addToyForm.image.value    
+        const likes = 0 
+
+        fetch(`http://localhost:3000/toys`, {
+          method: 'POST',
+          headers: {
+            "accept": "application/json",
+            "content-type": "application/json"
+          },
+          body: JSON.stringify({name, image, likes})
+        }).then(response => response.json())
+        .then(getToys)
+      })
     } else {
       toyFormContainer.style.display = "none";
     }
   });
-  fetch(toyUrl)
-  .then(response => response.json())
-  .then(data => {
-    const toyDiv = document.createElement("div");
-    toyDiv.className = "card"
-    console.log(toyDiv)
-    toyCollection.appendChild(toyDiv)
-    
-    const toyInfo = data;
 
-    toyInfo.stringify()
-
-    toyInfo.forEach(toyInfo.innerHTML =`<div class="card">
-    <h2>${toyInfo.name}</h2>
-    <img src=${toyInfo.image} class="toy-avatar" />
-    <p>${toyInfo.likes} Likes </p>
-    <button class="like-btn">Like <3</button>
-  </div>`)
-    console.log(toyInfo)
+  document.addEventListener("click", function(event){
+    if (event.target.className === "like-btn"){
+      const id = event.target.parentElement.dataset.id
+      const likesTag = event.target.parentElement.querySelector("p")
+      let likes = parseInt(likesTag.innerText.split(" ")[0])
+      likes += 1
+      
+      fetch(`http://localhost:3000/toys/${id}`,{
+        method: 'PATCH',
+        headers: {
+          "accept": "application/json",
+          "content-type": "applcation/json"
+        },
+        body: JSON.stringify({
+          likes: `${likes}`
+        })
+      })
+      .then(response => response.json())
+      .then(likesTag.innerHTML = `${likes} likes`)
+      
+    }
   })
+  getToys()
+
 });
-  
-
-
-
-
-
-// This will create a server storing all of our lost toy data with restful routes
-// at `http://localhost:3000/toys`. You can also check out
-// `http://localhost:3000/toys/:id`
-
-// ## Fetch Andy's Toys
-
-// On the `index.html` page, there is a `div` with the `id` "toy-collection."
-
-// When the page loads, make a 'GET' request to fetch all the toy objects. With the
-// response data, make a `<div class="card">` for each toy and add it to the
-// toy-collection `div`.
